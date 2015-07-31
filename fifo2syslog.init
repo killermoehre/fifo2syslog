@@ -1,0 +1,8 @@
+#!/bin/bash
+#
+# fifo2syslog	Write FIFO into syslog
+# 
+# chkconfig: - 
+
+# Source function library.
+. /etc/init.d/functions
