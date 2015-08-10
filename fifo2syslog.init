@@ -2,7 +2,89 @@
 #
 # fifo2syslog	Write FIFO into syslog
 # 
-# chkconfig: - 
+# chkconfig: - 5 95
+# description: Read from a FIFO (named pipe) and outputs into syslog. This \
+#              service can bi instanciated via symlinking.
+# processname: fifo2syslog
+# config: /etc/sysconfig/fifo2syslog
+# config: /etc/sysconfig/${0##*/}
+# pidfile: /var/run/${0##*/}.pid
 
 # Source function library.
-. /etc/init.d/functions
+. "/etc/init.d/functions"
+
+# get binary
+FIFO2SYSLOG="$(which fifo2syslog)" || {
+    echo "fifo2syslog not found. Aborting."
+    exit 1
+    }
+
+# Global config file
+if [ -f "/etc/sysconfig/fifo2syslog" ]; then
+    . "/etc/sysconfig/fifo2syslog"
+fi
+
+# check if instanciated
+IS_INSTANCE=0
+INSTANCE_NAME="${0##*/}"
+if [ "x$INSTANCE_NAME" != "xfifo2syslog" ]; then
+    IS_INSTANCE=1
+fi
+
+# source instance config
+if [ "$IS_INSTANCE" -eq 1 ]; then
+    if [ -f "/etc/sysconfig/$INSTANCE_NAME" ]; then
+        . "/etc/sysconfig/$INSTANCE_NAME"
+    fi
+fi
+
+if [ "x$FIFO" = "x" ]; then
+    echo "No FIFO in /etc/sysconfig/$INSTANCE_NAME defined. Aborting." >&2
+    exit 2
+fi
+
+start () {
+    if mkfifo -m "$F2S_FIFO_MODE" "$FIFO"; then
+        chown "${F2S_USER}:${F2S_GROUP}" "$FIFO"
+    elif [ ! -p "$FIFO" ]; then
+        rm "$FIFO" || {
+            echo "Can't remove non-named pipe $FIFO. Aborting."
+            exit 1
+            }
+    else
+        echo "Information: using existing fifo $FIFO" > &2
+    fi
+    echo -n "Starting ${INSTANCE_NAME}: "
+    daemon --user "$F2S_USER" "$FIFO2SYSLOG" --daemonize --fifo="$FIFO" --pid="/var/run/${INSTANCE_NAME}.pid" --facility="$F2S_FACILITY" --level="$F2S_LEVEL" --tag="$F2S_TAG"
+    r="$?"
+    [ "$r" -eq 0 ] && touch "/var/lock/subsys/$INSTANCE_NAME"
+    return "$r"
+}
+
+stop () {
+    echo -n "Stopping ${INSTANCE_NAME}: "
+    killproc -p "/var/run/${INSTANCE_NAME}.pid" /usr/bin/fifo2syslogr="$?"
+    r="$?"
+    rm -f "/var/lock/subsys/$INSTANCE_NAME"
+    return "$r"    
+}
+
+case "$1" in
+    start)
+        start
+        ;;
+    stop)
+        stop
+        ;;
+    restart|reload|force-reload)
+        start
+        stop
+        ;;
+    status)
+        ;;
+    *)
+        echo "Usage: /etc/init.d/${INSTANCE_NAME} {start|stop|restart|reload|force-reload|status}" >&2
+        exit 1
+        ;;
+esac
+exit $?
