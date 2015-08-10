@@ -63,7 +63,7 @@ parser.add_option("--tag", dest="syslog_tag", default="syslog", help="the TAG pr
 (options, args) = parser.parse_args()
 
 if not options.source_fifo:
-	sys.stderr.write("Path to FIFO required. Aborting.")
+	sys.stderr.write("Path to FIFO required. Aborting.\n")
 	sys.exit(3)
 
 if options.daemonize:
