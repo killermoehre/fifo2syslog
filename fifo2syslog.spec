@@ -23,9 +23,9 @@ rm -rf "$RPM_BUILD_ROOT"/*
 mkdir -p "$RPM_BUILD_ROOT/usr/bin"
 mkdir -p "$RPM_BUILD_ROOT/etc/init.d"
 mkdir -p "$RPM_BUILD_ROOT/etc/sysconfig"
-install -o 0 -g 0 -m 755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/fifo2syslog
-install -o 0 -g 0 -m 755 %{SOURCE0} $RPM_BUILD_ROOT/etc/init.d/fifo2syslog
-install -o 0 -g 0 -m 644 %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/fifo2syslog
+install -m755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/fifo2syslog
+install -m755 %{SOURCE0} $RPM_BUILD_ROOT/etc/init.d/fifo2syslog
+install -m644 %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/fifo2syslog
 
 %files
 /usr/bin/fifo2syslog
