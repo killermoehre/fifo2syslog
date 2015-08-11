@@ -7,6 +7,7 @@ Group: System Environment/Daemons
 URL: https://github.com/killermoehre/fifo2syslog
 Packager: Silvio Knizek <knizek@b1-systems.de>
 Requires: python2
+BuildRoot: %{_tmppath}/%{name}
 
 Source0: https://raw.githubusercontent.com/killermoehre/fifo2syslog/master/fifo2syslog.init
 Source1: https://raw.githubusercontent.com/killermoehre/fifo2syslog/master/fifo2syslog.py
@@ -16,16 +17,18 @@ Source2: https://raw.githubusercontent.com/killermoehre/fifo2syslog/master/fifo2
 This daemon reads from a named pipe (mkfifo(1)) and outputs it into syslog(8). This is done via python2.
 
 %prep
-rm -rf "$RPM_BUILD_DIR"/*
-rm -rf "$RPM_BUILD_ROOT"/*
 
 %install
+rm -rf "$RPM_BUILD_ROOT"
 mkdir -p "$RPM_BUILD_ROOT/usr/bin"
 mkdir -p "$RPM_BUILD_ROOT/etc/init.d"
 mkdir -p "$RPM_BUILD_ROOT/etc/sysconfig"
 install -m755 %{SOURCE1} $RPM_BUILD_ROOT/usr/bin/fifo2syslog
 install -m755 %{SOURCE0} $RPM_BUILD_ROOT/etc/init.d/fifo2syslog
 install -m644 %{SOURCE2} $RPM_BUILD_ROOT/etc/sysconfig/fifo2syslog
+
+%clean
+rm -rf "$RPM_BUILD_ROOT"
 
 %files
 /usr/bin/fifo2syslog
