@@ -52,7 +52,7 @@ start () {
             exit 1
             }
     else
-        echo "Information: using existing fifo $FIFO" > &2
+        echo "Information: using existing fifo $FIFO" >&2
     fi
     echo -n "Starting ${INSTANCE_NAME}: "
     daemon --user "$F2S_USER" "$FIFO2SYSLOG" --daemonize --fifo="$FIFO" --pid="/var/run/${INSTANCE_NAME}.pid" --facility="$F2S_FACILITY" --level="$F2S_LEVEL" --tag="$F2S_TAG"
