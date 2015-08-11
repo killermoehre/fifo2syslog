@@ -1,5 +1,5 @@
 Name: fifo2syslog
-Version: 1.0
+Version: 1.0.1
 Release: 1
 Summary: A daemon reading from a FIFO and outputting it to SYSLOG
 License: GPL2+
