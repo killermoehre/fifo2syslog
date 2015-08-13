@@ -81,6 +81,7 @@ case "$1" in
         stop
         ;;
     status)
+        status -p /var/run/${INSTANCE_NAME} fifo2syslog
         ;;
     *)
         echo "Usage: /etc/init.d/${INSTANCE_NAME} {start|stop|restart|reload|force-reload|status}" >&2
