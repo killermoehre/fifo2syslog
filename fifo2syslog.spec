@@ -35,8 +35,6 @@ rm -rf "$RPM_BUILD_ROOT"
 
 %files
 /usr/bin/fifo2syslog
-/usr/share/fifo2syslog/fifo2syslog.py
-%exclude /usr/share/fifo2syslog/fifo2syslog.pyc
-%exclude /usr/share/fifo2syslog/fifo2syslog.pyo
+/usr/share/fifo2syslog/fifo2syslog.py*
 /etc/init.d/fifo2syslog
 %config /etc/sysconfig/fifo2syslog
