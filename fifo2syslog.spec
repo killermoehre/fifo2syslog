@@ -1,5 +1,5 @@
 Name: fifo2syslog
-Version: 1.0.1
+Version: 1.0.2
 Release: 1
 Summary: A daemon reading from a FIFO and outputting it to SYSLOG
 License: GPL2+
@@ -36,5 +36,7 @@ rm -rf "$RPM_BUILD_ROOT"
 %files
 /usr/bin/fifo2syslog
 /usr/share/fifo2syslog/fifo2syslog.py
+%exclude /usr/share/fifo2syslog/fifo2syslog.pyc
+%exclude /usr/share/fifo2syslog/fifo2syslog.pyo
 /etc/init.d/fifo2syslog
 %config /etc/sysconfig/fifo2syslog
