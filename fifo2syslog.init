@@ -19,54 +19,47 @@ FIFO2SYSLOG="$(which fifo2syslog)" || {
     exit 1
     }
 
-# Global config file
-if [ -f "/etc/sysconfig/fifo2syslog" ]; then
-    . "/etc/sysconfig/fifo2syslog"
-fi
-
-# check if instanciated
-IS_INSTANCE=0
 INSTANCE_NAME="${0##*/}"
 PID_FILE="/var/run/${INSTANCE_NAME}.pid"
-if [ "x$INSTANCE_NAME" != "xfifo2syslog" ]; then
-    IS_INSTANCE=1
-fi
+LOCK_FILE="/var/lock/subsys/$INSTANCE_NAME"
+CONF_FILE="/etc/sysconfig/$INSTANCE_NAME"
 
-# source instance config
-if [ "$IS_INSTANCE" -eq 1 ]; then
-    if [ -f "/etc/sysconfig/$INSTANCE_NAME" ]; then
-        . "/etc/sysconfig/$INSTANCE_NAME"
-    fi
+if [ -f "$CONF_FILE" ]; then
+    . "$CONF_FILE"
 fi
 
 if [ "x$FIFO" = "x" ]; then
-    echo "No FIFO in /etc/sysconfig/$INSTANCE_NAME defined. Aborting." >&2
+    echo "No FIFO in $CONF_FILE defined. Aborting." >&2
     exit 2
 fi
 
 start () {
+    if [ -f "LOCK_FILE" ]; then
+        echo "Daemon already locked with $LOCK_FILE. Exiting." >&2
+        exit 0
+    fi
     if mkfifo -m "$F2S_FIFO_MODE" "$FIFO"; then
         chown "${F2S_USER}:${F2S_GROUP}" "$FIFO"
     elif [ ! -p "$FIFO" ]; then
         rm "$FIFO" || {
-            echo "Can't remove non-named pipe $FIFO. Aborting."
+            echo "Can't remove non-\"named pipe\" $FIFO. Aborting."
             exit 1
             }
     else
-        echo "Information: using existing fifo $FIFO" >&2
+        echo "Using existing fifo $FIFO" >&2
     fi
     echo -n "Starting ${INSTANCE_NAME}: "
     daemon --user "$F2S_USER" "$FIFO2SYSLOG" --daemonize --fifo="$FIFO" --pid="$PID_FILE" --facility="$F2S_FACILITY" --level="$F2S_LEVEL" --tag="$F2S_TAG"
     r="$?"
-    [ "$r" -eq 0 ] && touch "/var/lock/subsys/$INSTANCE_NAME"
+    [ "$r" -eq 0 ] && touch "$LOCK_FILE"
     return "$r"
 }
 
 stop () {
     echo -n "Stopping ${INSTANCE_NAME}: "
-    killproc -p "$PID_FILE" /usr/bin/fifo2syslog
+    killproc -p "$PID_FILE" "$INSTANCE_NAME"
     r="$?"
-    rm -f "/var/lock/subsys/$INSTANCE_NAME"
+    rm -f "$LOCK_FILE"
     return "$r"    
 }
 
@@ -79,13 +72,14 @@ case "$1" in
         ;;
     restart|reload|force-reload)
         start
+        sleep 1
         stop
         ;;
     status)
-        status -p "$PID_FILE" fifo2syslog
+        status -p "$PID_FILE" "$INSTANCE_NAME"
         ;;
     *)
-        echo "Usage: /etc/init.d/${INSTANCE_NAME} {start|stop|restart|reload|force-reload|status}" >&2
+        echo "Usage: $0 {start|stop|restart|reload|force-reload|status}" >&2
         exit 1
         ;;
 esac
