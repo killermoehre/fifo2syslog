@@ -4,9 +4,8 @@
 # 
 # chkconfig: - 5 95
 # description: Read from a FIFO (named pipe) and outputs into syslog. This \
-#              service can bi instanciated via symlinking.
-# processname: fifo2syslog
-# config: /etc/sysconfig/fifo2syslog
+#              service can be instanciated via symlinking.
+# processname: ${0##*/}
 # config: /etc/sysconfig/${0##*/}
 # pidfile: /var/run/${0##*/}.pid
 
@@ -34,7 +33,7 @@ if [ "x$FIFO" = "x" ]; then
 fi
 
 start () {
-    if [ -f "LOCK_FILE" ]; then
+    if [ -f "$LOCK_FILE" ]; then
         echo "Daemon already locked with $LOCK_FILE. Exiting." >&2
         exit 0
     fi
