@@ -27,6 +27,7 @@ fi
 # check if instanciated
 IS_INSTANCE=0
 INSTANCE_NAME="${0##*/}"
+PID_FILE="/var/run/${INSTANCE_NAME}.pid"
 if [ "x$INSTANCE_NAME" != "xfifo2syslog" ]; then
     IS_INSTANCE=1
 fi
@@ -55,7 +56,7 @@ start () {
         echo "Information: using existing fifo $FIFO" >&2
     fi
     echo -n "Starting ${INSTANCE_NAME}: "
-    daemon --user "$F2S_USER" "$FIFO2SYSLOG" --daemonize --fifo="$FIFO" --pid="/var/run/${INSTANCE_NAME}.pid" --facility="$F2S_FACILITY" --level="$F2S_LEVEL" --tag="$F2S_TAG"
+    daemon --user "$F2S_USER" "$FIFO2SYSLOG" --daemonize --fifo="$FIFO" --pid="$PID_FILE" --facility="$F2S_FACILITY" --level="$F2S_LEVEL" --tag="$F2S_TAG"
     r="$?"
     [ "$r" -eq 0 ] && touch "/var/lock/subsys/$INSTANCE_NAME"
     return "$r"
@@ -63,7 +64,7 @@ start () {
 
 stop () {
     echo -n "Stopping ${INSTANCE_NAME}: "
-    killproc -p "/var/run/${INSTANCE_NAME}.pid" /usr/bin/fifo2syslogr="$?"
+    killproc -p "$PID_FILE" /usr/bin/fifo2syslog
     r="$?"
     rm -f "/var/lock/subsys/$INSTANCE_NAME"
     return "$r"    
@@ -81,7 +82,7 @@ case "$1" in
         stop
         ;;
     status)
-        status -p /var/run/${INSTANCE_NAME} fifo2syslog
+        status -p "$PID_FILE" fifo2syslog
         ;;
     *)
         echo "Usage: /etc/init.d/${INSTANCE_NAME} {start|stop|restart|reload|force-reload|status}" >&2
