@@ -39,14 +39,15 @@ def doublefork(pid_file):
     
     pid = os.getpid()
     try:
-        pid_file = open(options.pid_file, "w").write("%s\n" % pid)
+        pid_filehandle = open(pid_file, "w")
+        pid_filehandle.write("%s\n" % pid)
     except OSError, e:
-        syslog.openlog("syslog", 0, syslog.LOG_DAEMON)
+        syslog.openlog("fifo2syslog", 0, syslog.LOG_DAEMON)
         syslog.syslog(syslog.LOG_ERR, "Writing pid file %s failed: %d (%s)\n" % (pid_file, e.errno, e.strerror))
         syslog.closelog()
         sys.exit(2)
     else:
-        pid_file.close()
+        pid_filehandle.close()
 
 facility2int = {"LOG_KERN": 0, "LOG_USER": 8, "LOG_MAIL": 16, "LOG_DAEMON": 24, "LOG_AUTH": 32, "LOG_AUTHPRIV": 32, "LOG_SYSLOG": 40, "LOG_LPR": 48, "LOG_NEWS": 56, "LOG_UUCP": 64, "LOG_CRON": 72, "LOG_LOCAL0": 128, "LOG_LOCAL1": 136, "LOG_LOCAL2": 144, "LOG_LOCAL3": 152, "LOG_LOCAL4": 160, "LOG_LOCAL5": 168, "LOG_LOCAL6": 176, "LOG_LOCAL7": 184}
 level2int = {"LOG_DEBUG": 7, "LOG_INFO": 6, "LOG_NOTICE": 5, "LOG_WARNING": 4, "LOG_ERR": 3, "LOG_CRIT": 2, "LOG_ALERT": 1, "LOG_EMERG": 0}
