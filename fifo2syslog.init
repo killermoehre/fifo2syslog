@@ -37,7 +37,7 @@ start () {
         echo "Daemon already locked with $LOCK_FILE. Exiting." >&2
         exit 0
     fi
-    if mkfifo -m "$F2S_FIFO_MODE" "$FIFO"; then
+    if mkfifo -m "$F2S_FIFO_MODE" "$FIFO" 2> /dev/null; then
         chown "${F2S_USER}:${F2S_GROUP}" "$FIFO"
     elif [ ! -p "$FIFO" ]; then
         rm "$FIFO" || {
@@ -70,9 +70,9 @@ case "$1" in
         stop
         ;;
     restart|reload|force-reload)
-        start
-        sleep 1
         stop
+        sleep 1
+        start
         ;;
     status)
         status -p "$PID_FILE" "$INSTANCE_NAME"
